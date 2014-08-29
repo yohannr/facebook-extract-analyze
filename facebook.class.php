@@ -48,7 +48,9 @@ class Facebook
 
 
 	/*
-	 * Search for pages regarding an expression
+	 * Search for pages (with main information) regarding an expression
+	 * Get results in a dedicated country or language
+	 * TODO : get date of last post
 	*/
 	public function searchForPages($expression)
 	{
@@ -59,7 +61,25 @@ class Facebook
 
  		$result = $this->executeQuery($url);
 
- 		return (is_null($result->data)) ? $result->error->message : $result->data;
+ 		if (is_null($result->data)) {
+ 			return $result->error->message;
+ 		}
+ 		else {
+ 			$i = 0;
+ 			foreach ($result->data as $page) {
+ 				$arr_pages[$i]['id'] = $page->id;
+ 				$arr_pages[$i]['name'] = $page->name;
+ 				$arr_pages[$i]['category'] = $page->category;
+ 				$info_page = $this->getPageInformation($page->id);
+ 				$arr_pages[$i]['link'] = $info_page->link;
+ 				$arr_pages[$i]['about'] = $info_page->about;
+ 				$arr_pages[$i]['likes'] = (int)$info_page->likes;
+
+ 				++$i;
+ 			}
+
+ 			return $arr_pages;
+ 		}
 	}
 
 
@@ -84,6 +104,19 @@ class Facebook
 	public function getActiveUsers($idPage)
 	{
 		// TODO
+	}
+
+
+	/*
+	 * Return main information of a dedicated page
+	*/
+	public function getPageInformation($idPage)
+	{
+		$url = self::$base_url.$idPage.'?access_token='.$this->access_token;
+
+		$result = $this->executeQuery($url);
+
+		return $result;
 	}
 
 }
